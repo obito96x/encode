@@ -25,15 +25,13 @@ class Config:
                 "ALWAYS_DEPLOY_LATEST", default=False, cast=bool
             )
             self.ALLOW_ACTION = config("ALLOW_ACTION", default=True, cast=bool)
-            self.APP_ID = config("APP_ID", default=6, cast=int)
-            self.API_HASH = config(
-                "API_HASH", default="eb06d4abfb49dc3eeb1aeb98ae0f581e"
-            )
+            self.APP_ID = config("APP_ID", "24828197")
+            self.API_HASH = config("API_HASH", "d36e278e89ebeb900aeda4128d413a77")
             self.ARIA2_PORT = config("ARIA2_PORT", default=6800, cast=int)
-            self.BOT_TOKEN = config("BOT_TOKEN")
+            self.BOT_TOKEN = config("BOT_TOKEN",  "8047158900:AAEgfEVTetJj9Lu3eVAcLoegnGVyLtdP1eQ")
             self.CACHE_DL = config("CACHE_DL", default=False, cast=bool)
             self.CAP_DECO = config("CAP_DECO", default="◉")
-            self.C_LINK = config("C_LINK", default="@ANi_MiNE")
+            self.C_LINK = config("C_LINK", default="@CrewVerse")
             self.CMD_SUFFIX = config("CMD_SUFFIX", default=str())
             self.COMP_MODE = config("COMPATIBILITY_MODE", default=True, cast=bool)
             self.CUSTOM_RENAME = config("CUSTOM_RENAME", default=None)
@@ -51,9 +49,7 @@ class Config:
             self.FCHANNEL_STAT = config("FCHANNEL_STAT", default=0, cast=int)
             self.FCODEC = config("FCODEC", default=None)
             self.FFMPEG = config(
-                "FFMPEG",
-                default='ffmpeg -i "{}" -preset ultrafast -c:v libx265 -crf 27 -map 0:v -c:a aac -map 0:a -c:s copy -map 0:s? "{}"',
-            )
+                "FFMPEG",'ffmpeg -i "{}" -preset fast -c:v libx264 -crf 34 -vf "scale=854:480" -map 0:v -c:a aac -map 0:a -c:s copy -map 0:s? "{}"')
             self.FFMPEG2 = config("FFMPEG2", default=None)
             self.FFMPEG3 = config("FFMPEG3", default=None)
             self.FFMPEG4 = config("FFMPEG4", default=None)
@@ -69,7 +65,7 @@ class Config:
             self.NO_BANNER = config("NO_BANNER", default=False, cast=bool)
             self.NO_TEMP_PM = config("NO_TEMP_PM", default=False, cast=bool)
             self.OVR = config("OVR", default=None)
-            self.OWNER = config("OWNER")
+            self.OWNER = config("OWNER", "8108281129")
             self.PAUSE_ON_DL_INFO = config("PODI", default=True, cast=bool)
             self.QDL_TIMEOUT = config("QBIT_DL_TIMEOUT", default=0, cast=int)
             self.QBIT_PORT = config("QBIT_PORT", default=8090, cast=int)
@@ -81,7 +77,7 @@ class Config:
             self.REPORT_FAILED_ENC = config(
                 "REPORT_FAILED_ENC", default=False, cast=bool
             )
-            self.RSS_CHAT = config("RSS_CHAT", default=0, cast=str)
+            self.RSS_CHAT = config("RSS_CHAT", default=0, cast=int)
             self.RSS_DELAY = config("RSS_DELAY", default=60, cast=int)
             self.RSS_DIRECT = config("RSS_DIRECT", default=True, cast=bool)
             self.TELEGRAPH_API = config(
@@ -145,3 +141,4 @@ class Runtime_Config:
 
 conf = Config()
 _bot = Runtime_Config()
+            
