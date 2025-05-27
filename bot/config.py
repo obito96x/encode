@@ -52,7 +52,7 @@ class Config:
                 "FFMPEG",'ffmpeg -i "{}" -preset fast -c:v libx264 -crf 34 -vf "scale=854:480" -map 0:v -c:a aac -map 0:a -c:s copy -map 0:s? "{}"')
             self.FFMPEG2 = config("FFMPEG2",'ffmpeg -i "{}" -preset fast -c:v libx264 -crf 34 -vf "scale=1280:720" -map 0:v -c:a aac -map 0:a -c:s copy -map 0:s? "{}"')
             self.FFMPEG3 = config("FFMPEG3", 'ffmpeg -i "{}" -preset fast -c:v libx264 -crf 34 -vf "scale=1980:1080" -map 0:v -c:a aac -map 0:a -c:s copy -map 0:s? "{}"')
-            self.FFMPEG4 = config("FFMPEG4", 'ffmpeg -i "{}" -preset fast -c:v libx264 -crf 34 -vf "scale=3840:2160" -map 0:v -c:a aac -map 0:a -c:s copy -map 0:s? "{}"')
+            self.FFMPEG4 = config("FFMPEG4", default=None)
             self.FINISHED_PROGRESS_STR = config("FINISHED_PROGRESS_STR", default="🧡")
             self.FL_CAP = config("FILENAME_AS_CAPTION", default=False, cast=bool)
             self.FS_THRESHOLD = config("FLOOD_SLEEP_THRESHOLD", default=600, cast=int)
