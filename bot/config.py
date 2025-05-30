@@ -28,7 +28,7 @@ class Config:
             self.APP_ID = config("APP_ID", "24828197")
             self.API_HASH = config("API_HASH", "d36e278e89ebeb900aeda4128d413a77")
             self.ARIA2_PORT = config("ARIA2_PORT", default=6800, cast=int)
-            self.BOT_TOKEN = config("BOT_TOKEN",  "8047158900:AAEOd7GnesFE_w_c9ZETQR-rziXeA2WLlho")
+            self.BOT_TOKEN = config("BOT_TOKEN",  "8047158900:AAGFzLuZ4t6P-5c_UbRz3bsKN4TIbUU5qjY")
             self.CACHE_DL = config("CACHE_DL", default=False, cast=bool)
             self.CAP_DECO = config("CAP_DECO", default="◉")
             self.C_LINK = config("C_LINK", default="@CrewVerse")
