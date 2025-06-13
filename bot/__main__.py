@@ -17,7 +17,7 @@ import asyncio
 import itertools
 
 from pyrogram import filters
-from .db_utils import *
+from .utils.db_utils import *
 from pyrogram.types import Message
 
 from . import LOGS, conf, events, pyro, re, tele
