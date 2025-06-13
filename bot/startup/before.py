@@ -134,6 +134,8 @@ if conf.DATABASE_URL:
     rssdb = db["rss"]
     userdb = db["users"]
 
+    _bot.watermarks = {}
+
     load_db(queuedb, "batches", _bot.batch_queue, "dict")
     load_db(queuedb, "queue", _bot.queue, "dict")
     load_db(userdb, "t_users", _bot.temp_users, "list")
