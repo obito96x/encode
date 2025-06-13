@@ -414,28 +414,37 @@ async def check(event, args, client):
     )
 
 
+
+def inject_watermark(ffmpeg_str: str, wm_path: str | None):
+    if not wm_path:
+        return ffmpeg_str
+    if "-vf" in ffmpeg_str:
+        return ffmpeg_str  # Already has video filters
+    return f"{ffmpeg_str.strip()} -vf \"movie={wm_path}[wm];[in][wm] overlay=W-w-10:H-h-10[out]\""
+
+
 async def reffmpeg(event, args, client):
-    """
-    Reset encoding params.
-    Default value to reset to, it is either set in .env or contained in .config
-    Arguments:
-        -2
-        -3
-        -4
-        To reset or unset ffmpeg2,3,4
-        No argument for first encoding param
-    """
     if not user_is_owner(event.sender_id):
         return await try_delete(event)
+
     try:
         if args and (args := args[:2]) in ("-2", "-3", "-4"):
             return await reffmpeg2(event, args, client)
-        with open(ffmpeg_file, "w") as file:
-            file.write(str(conf.FFMPEG) + "\n")
 
-        await save2db2(conf.FFMPEG, "ffmpeg")
+        # Fetch user's watermark
+        wm = await get_watermark(event.sender_id)
+        wm_path = f"user_watermarks/{event.sender_id}.png" if wm else None
+
+        ffmpeg_value = str(conf.FFMPEG)
+        if wm_path and Path(wm_path).exists():
+            ffmpeg_value = inject_watermark(ffmpeg_value, wm_path)
+
+        with open(ffmpeg_file, "w") as file:
+            file.write(ffmpeg_value + "\n")
+
+        await save2db2(ffmpeg_value, "ffmpeg")
         await event.reply(
-            f"<pre>\n<code class='Reseted ffmpeg CLI parameters to:'>{conf.FFMPEG}</code>\n</pre>",
+            f"<pre>\n<code class='Reseted ffmpeg CLI parameters to:'>{ffmpeg_value}</code>\n</pre>",
             parse_mode="html",
         )
     except Exception:
@@ -443,58 +452,46 @@ async def reffmpeg(event, args, client):
 
 
 async def reffmpeg2(event, args, client):
-    """
-    Helper function to assist <reffmpeg>
-    """
     try:
         s = args[1:]
-        if "-2" in args:
-            if not conf.FFMPEG2 and not file_exists(ffmpeg_file2):
-                res = f"FFMPEG{s} not set in .env or bot."
+        wm = await get_watermark(event.sender_id)
+        wm_path = f"user_watermarks/{event.sender_id}.png" if wm else None
+
+        conf_map = {
+            "-2": (ffmpeg_file2, conf.FFMPEG2, "ffmpeg2"),
+            "-3": (ffmpeg_file3, conf.FFMPEG3, "ffmpeg3"),
+            "-4": (ffmpeg_file4, conf.FFMPEG4, "ffmpeg4"),
+        }
+
+        if args not in conf_map:
+            return
+
+        file_path, ffmpeg_conf, db_key = conf_map[args]
+
+        if not ffmpeg_conf and not file_exists(file_path):
+            res = f"{db_key.upper()} not set in .env or bot."
+        else:
+            if file_exists(file_path):
+                s_remove(file_path)
+                await save2db2(None, db_key)
+                res = f"{db_key.upper()} params deleted.\nTry again to reset to the param in .env"
             else:
-                if file_exists(ffmpeg_file2):
-                    s_remove(ffmpeg_file2)
-                    await save2db2(None, f"ffmpeg{s}")
-                    res = f"FFMPEG{s} params deleted.\nTry again to reset to the param in .env"
-                else:
-                    with open(ffmpeg_file2, "w") as file:
-                        file.write(str(conf.FFMPEG2) + "\n")
-                    await save2db2(conf.FFMPEG2, f"ffmpeg{s}")
-                    res = f"<pre>\n<code class='Reseted ffmpeg{s} CLI parameters to:'>{conf.FFMPEG2}</code>\n</pre>"
-        elif "-3" in args:
-            if not conf.FFMPEG3 and not file_exists(ffmpeg_file3):
-                res = f"FFMPEG{s} not set in .env or bot."
-            else:
-                if file_exists(ffmpeg_file3):
-                    s_remove(ffmpeg_file3)
-                    await save2db2(None, f"ffmpeg{s}")
-                    res = f"FFMPEG{s} params deleted.\nTry again to reset to the param in .env"
-                else:
-                    with open(ffmpeg_file3, "w") as file:
-                        file.write(str(conf.FFMPEG3) + "\n")
-                    await save2db2(conf.FFMPEG3, f"ffmpeg{s}")
-                    res = f"<pre>\n<code class='Reseted ffmpeg{s} CLI parameters to:'>{conf.FFMPEG3}</code>\n</pre>"
-        elif "-4" in args:
-            if not conf.FFMPEG4 and not file_exists(ffmpeg_file4):
-                res = f"FFMPEG{s} not set in .env or bot."
-            else:
-                if file_exists(ffmpeg_file4):
-                    s_remove(ffmpeg_file4)
-                    await save2db2(None, f"ffmpeg{s}")
-                    res = f"FFMPEG{s} params deleted.\nTry again to reset to the param in .env"
-                else:
-                    with open(ffmpeg_file4, "w") as file:
-                        file.write(str(conf.FFMPEG4) + "\n")
-                    await save2db2(conf.FFMPEG4, f"ffmpeg{s}")
-                    res = f"<pre>\n<code class='Reseted ffmpeg{s} CLI parameters to:'>{conf.FFMPEG4}</code>\n</pre>"
+                ffmpeg_value = str(ffmpeg_conf)
+                if wm_path and Path(wm_path).exists():
+                    ffmpeg_value = inject_watermark(ffmpeg_value, wm_path)
+
+                with open(file_path, "w") as file:
+                    file.write(ffmpeg_value + "\n")
+
+                await save2db2(ffmpeg_value, db_key)
+                res = f"<pre>\n<code class='Reseted {db_key.upper()} CLI parameters to:'>{ffmpeg_value}</code>\n</pre>"
 
         ejob.reset()
-        await event.reply(
-            res,
-            parse_mode="html",
-        )
+        await event.reply(res, parse_mode="html")
+
     except Exception:
         await logger(Exception)
+
 
 
 async def version2(event, args, client):
