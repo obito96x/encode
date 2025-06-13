@@ -34,29 +34,42 @@ async def save2db(db="queue", retries=3):
             await asyncio.sleep(0.5)
 
 
-async def save2db2(data: dict | str = False, db: str = None):
+async def save2db2(data: dict | str = False, db: str = None, user_id: int = None):
     if not database:
         if data is False or db == "rss":
             await sync_to_async(save2db_lcl2, db)
         return
-    if data is False:
+
+    # Save temp users list
+    if data is False and db == "t_users":
         tusers = list_to_str(_bot.temp_users)
         data = pickle.dumps(tusers)
         _update = {"t_users": data}
         await sync_to_async(userdb.update_one, _filter, {"$set": _update}, upsert=True)
         return
+
+    # Per-user watermark
+    if db == "watermark" and user_id:
+        await sync_to_async(
+            userdb.update_one,
+            {"_id": user_id},
+            {"$set": {"watermark": data}},
+            upsert=True
+        )
+        return
+
+    # Pickle for bot-wide ffmpeg/mux/filter/rss
     p_data = pickle.dumps(data)
     _update = {db: p_data}
+
     if db in ("ffmpeg", "mux_args", "ffmpeg2", "ffmpeg3", "ffmpeg4"):
-        await sync_to_async(
-            ffmpegdb.update_one, _filter, {"$set": _update}, upsert=True
-        )
+        await sync_to_async(ffmpegdb.update_one, _filter, {"$set": _update}, upsert=True)
         return
+
     if db in ("autoname", "cus_rename", "filter"):
-        await sync_to_async(
-            filterdb.update_one, _filter, {"$set": _update}, upsert=True
-        )
+        await sync_to_async(filterdb.update_one, _filter, {"$set": _update}, upsert=True)
         return
+
     if db == "rss":
         await sync_to_async(rssdb.update_one, _filter, {"$set": _update}, upsert=True)
         return
