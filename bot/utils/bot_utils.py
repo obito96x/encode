@@ -154,81 +154,99 @@ class Encode_info:
 
 encode_info = Encode_info()
 
-
 class Encode_job:
     def __init__(self):
         self.reset(force=True)
 
     class Jobs:
         def __init__(self):
-            self.f1 = True
-            self.f2 = Path(ffmpeg_file2).is_file()
-            self.f3 = Path(ffmpeg_file3).is_file()
-            self.f4 = Path(ffmpeg_file4).is_file()
+            self.slots = {
+                1: {"status": True, "file": ffmpeg_file, "user_id": None, "cmd": None, "watermark": None},
+                2: {"status": Path(ffmpeg_file2).is_file(), "file": ffmpeg_file2, "user_id": None, "cmd": None, "watermark": None},
+                3: {"status": Path(ffmpeg_file3).is_file(), "file": ffmpeg_file3, "user_id": None, "cmd": None, "watermark": None},
+                4: {"status": Path(ffmpeg_file4).is_file(), "file": ffmpeg_file4, "user_id": None, "cmd": None, "watermark": None},
+            }
 
     def jobs(self, list=False):
-        job = []
-        for x in (self.ins.f1, self.ins.f2, self.ins.f3, self.ins.f4):
-            job.append(x) if x else None
-        if list:
-            return job
-        return len(job)
+        job = [slot for slot in self.ins.slots.values() if slot["status"]]
+        return job if list else len(job)
 
     def complete(self):
-        for i in self.jobs(list=True):
-            self.done()
+        for i in range(1, 5):
+            self.done(i)
 
-    def done(self):
-        if self.ins.f1:
-            self.ins.f1 = None
-        elif self.ins.f2:
-            self.ins.f2 = None
-        elif self.ins.f3:
-            self.ins.f3 = None
-        elif self.ins.f4:
-            self.ins.f4 = None
+    def done(self, index=None):
+        # Free up the first active slot or the given index
+        if index:
+            self.ins.slots[index]["status"] = None
+        else:
+            for i in self.ins.slots:
+                if self.ins.slots[i]["status"]:
+                    self.ins.slots[i]["status"] = None
+                    break
 
-    def get_pending(self):
-        list = []
-        if self.ins.f1:
-            list.append(ffmpeg_file)
-        if self.ins.f2:
-            list.append(ffmpeg_file2)
-        if self.ins.f3:
-            list.append(ffmpeg_file3)
-        if self.ins.f4:
-            list.append(ffmpeg_file4)
-        return list
+    def get_pending_slot(self):
+        for i, slot in self.ins.slots.items():
+            if slot["status"]:
+                return i, slot
+        return None, None
 
     def get_pending_index(self):
-        if self.ins.f1:
-            return 1
-        elif self.ins.f2:
-            return 2
-        elif self.ins.f3:
-            return 3
-        elif self.ins.f4:
-            return 4
+        for i, slot in self.ins.slots.items():
+            if slot["status"]:
+                return i
+        return None
 
-    def get_pending_pos(self):
-        if self.ins.f1:
-            return
-        elif self.ins.f2:
-            return "2nd"
-        elif self.ins.f3:
-            return "3rd"
-        elif self.ins.f4:
-            return "4th"
+    def get_pending_path(self):
+        for slot in self.ins.slots.values():
+            if slot["status"]:
+                return slot["file"]
+        return None
 
     def pending(self):
-        if self.ins.f1:
-            return ffmpeg_file
-        elif self.ins.f2:
-            return ffmpeg_file2
-        elif self.ins.f3:
-            return ffmpeg_file3
-        elif self.ins.f4:
-            return ffmpeg_file4
+        _, slot = self.get_pending_slot()
+        return slot["file"] if slot else None
+
+    def assign_job(self, user_id, ffmpeg_base_cmd, watermark_url=None):
+        for i, slot in self.ins.slots.items():
+            if slot["status"]:
+                wm_path = self._prepare_watermark(user_id, watermark_url)
+                slot["user_id"] = user_id
+                slot["cmd"] = self._inject_watermark(ffmpeg_base_cmd, wm_path) if wm_path else ffmpeg_base_cmd
+                slot["watermark"] = wm_path
+                return i, slot
+        return None, None
+
+    def _prepare_watermark(self, user_id: int, watermark_url: str | None) -> str | None:
+        """
+        Download the watermark if it's a URL or check for existing file.
+        """
+        if not watermark_url:
+            return None
+        wm_dir = Path("user_watermarks")
+        wm_dir.mkdir(parents=True, exist_ok=True)
+        wm_path = wm_dir / f"{user_id}.png"
+
+        if watermark_url.startswith("http"):
+            # download watermark (you must implement `download_image` async function)
+            # await download_image(watermark_url, wm_path)  # if async
+            os.system(f"curl -L '{watermark_url}' --output '{wm_path}'")  # basic sync fallback
+        else:
+            # If user gave a path, use it directly
+            wm_path = Path(watermark_url)
+
+        return str(wm_path) if wm_path.exists() else None
+
+    def _inject_watermark(self, cmd: str, wm_path: str) -> str:
+        """
+        Add overlay watermark filter to ffmpeg command.
+        """
+        if not wm_path:
+            return cmd
+        overlay = f'-vf "movie={wm_path}[wm];[in][wm] overlay=W-w-10:H-h-10[out]"'
+        if "-vf" in cmd:
+            return cmd  # Don't inject if already has custom -vf
+        return f"{cmd.strip()} {overlay}"
 
     def reset(self, force=False):
         if not force and self.busy:
@@ -238,7 +256,6 @@ class Encode_job:
         self.id = None
         self.sminfo = None
         self.prev_dl_client = None
-
 
 encode_job = Encode_job()
 
