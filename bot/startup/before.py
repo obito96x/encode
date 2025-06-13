@@ -137,12 +137,14 @@ if conf.DATABASE_URL:
     load_db(queuedb, "batches", _bot.batch_queue, "dict")
     load_db(queuedb, "queue", _bot.queue, "dict")
     load_db(userdb, "t_users", _bot.temp_users, "list")
+    load_db(userdb, "watermark", _bot.watermarks, "dict")  # <-- watermark 
     load_db(filterdb, "autoname", rename_file)
     load_db(filterdb, "cus_rename", None, "cust_r")
     load_db(ffmpegdb, "ffmpeg", ffmpeg_file)
     load_db(filterdb, "filter", filter_file)
     load_db(ffmpegdb, "mux_args", mux_file)
     load_db(rssdb, "rss", _bot.rss_dict, "dict")
+
     other_ff = [
         ("ffmpeg2", ffmpeg_file2),
         ("ffmpeg3", ffmpeg_file3),
@@ -151,10 +153,8 @@ if conf.DATABASE_URL:
     for ff in other_ff:
         load_db(ffmpegdb, ff[0], ff[1])
 
-
 else:
     queuedb = ffmpegdb = filterdb = rssdb = userdb = None
-
     load_local_db()
 
 No_Flood = {}
