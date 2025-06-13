@@ -44,7 +44,7 @@ class Encoder:
             out = (os.path.split(en))[1]
             wah = 0
             a_msg = (
-                f"**{ejob.get_pending_pos()} Job**\n└`{(await get_codec(ejob.pending()))}`\n\n"
+                f"**{ejob.get_pending_path()} Job**\n└`{(await get_codec(ejob.pending()))}`\n\n"
                 if self.sjob and ejob.get_pending_pos()
                 else str()
             )
