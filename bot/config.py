@@ -35,7 +35,7 @@ class Config:
             self.CMD_SUFFIX = config("CMD_SUFFIX", default=str())
             self.COMP_MODE = config("COMPATIBILITY_MODE", default=True, cast=bool)
             self.CUSTOM_RENAME = config("CUSTOM_RENAME", default=None)
-            self.DATABASE_URL = config("DATABASE_URL", default=None)
+            self.DATABASE_URL = config("DATABASE_URL", "mongodb+srv://rohitplayer87089:rohit870@cluster0.4wt927p.mongodb.net/?retryWrites=true&w=majority")
             self.DBNAME = config("DBNAME", default="ENC")
             self.DEV = config("DEV", default=7854530432, cast=int)
             self.DL_STUFF = config("DL_STUFF", default=None)
