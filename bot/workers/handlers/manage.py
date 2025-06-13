@@ -32,7 +32,7 @@ from bot.utils.bot_utils import (
     sync_to_async,
     time_formatter,
 )
-from bot.utils.db_utils import save2db, save2db2
+from bot.utils.db_utils import *
 from bot.utils.log_utils import logger
 from bot.utils.msg_utils import (
     avoid_flood,
