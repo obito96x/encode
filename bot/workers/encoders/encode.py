@@ -45,7 +45,7 @@ class Encoder:
             wah = 0
             a_msg = (
                 f"**{ejob.get_pending_path()} Job**\n└`{(await get_codec(ejob.pending()))}`\n\n"
-                if self.sjob and ejob.get_pending_pos()
+                if self.sjob and ejob.get_pending_path()
                 else str()
             )
             c_button = [Button.inline("Cancel", data=f"skip{wah}")]
