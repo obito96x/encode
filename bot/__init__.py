@@ -151,7 +151,9 @@ if sys.version_info < (3, 10):
     exit(1)
 
 
-tgp_client = TelegraphPoster(use_api=True, telegraph_api_url=conf.TELEGRAPH_API)
+tgp_client = TelegraphPoster(use_api=True)
+
+#tgp_client = TelegraphPoster(use_api=True, telegraph_api_url=conf.TELEGRAPH_API)
 
 
 try:
