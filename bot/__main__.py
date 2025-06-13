@@ -17,6 +17,8 @@ import asyncio
 import itertools
 
 from pyrogram import filters
+from .db_utils import *
+from pyrogram.types import Message
 
 from . import LOGS, conf, events, pyro, re, tele
 from .startup.after import on_startup
@@ -441,6 +443,43 @@ async def _(e):
 @pyro.on_message(filters.incoming & (filters.video | filters.document))
 async def _(pyro, message):
     await pencode(message)
+
+
+@pyro.on_message(filters.command("get_watermark") & filters.private)
+async def get_user_watermark(client, message: Message):
+    wm = await get_watermark(message.from_user.id)
+    if wm:
+        await message.reply(f"💧 Your current watermark:\n\n`{wm}`")
+    else:
+        await message.reply("❌ No watermark set. Use /set_watermark to set one.")
+
+@pyro.on_message(filters.command("set_watermark") & filters.private)
+async def set_user_watermark(client, message: Message):
+    if not message.reply_to_message or not message.reply_to_message.text:
+        return await message.reply("❌ Reply to a message containing the watermark URL or text to set it.")
+
+    watermark = message.reply_to_message.text.strip()
+    if not watermark:
+        return await message.reply("❌ Invalid watermark.")
+
+    await set_watermark(message.from_user.id, watermark)
+    await message.reply("✅ Watermark saved successfully.")
+
+@pyro.on_message(filters.command("see_watermark") & filters.private)
+async def see_user_watermark(client, message: Message):
+    wm = await get_watermark(message.from_user.id)
+    if not wm:
+        return await message.reply("❌ No watermark set.")
+
+    if wm.startswith("http://") or wm.startswith("https://"):
+        await message.reply_photo(wm, caption="🖼 Your watermark preview")
+    else:
+        await message.reply(f"💧 Your watermark text:\n\n`{wm}`")
+
+@pyro.on_message(filters.command("remove_watermark") & filters.private)
+async def remove_user_watermark(client, message: Message):
+    await delete_watermark(message.from_user.id)
+    await message.reply("🗑 Watermark removed.")
 
 
 ########### Start ############
