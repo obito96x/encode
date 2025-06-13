@@ -7,10 +7,6 @@ from bot.startup.before import ffmpegdb, filterdb, pickle, queuedb, rssdb, userd
 from .bot_utils import list_to_str, sync_to_async
 from .local_db_utils import save2db_lcl, save2db_lcl2
 
-# i suck at using database -_-'
-# But hey if it works don't touch it
-# wanna fix this?
-# PRs are welcome
 
 _filter = {"_id": bot_id}
 
