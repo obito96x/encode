@@ -1,4 +1,6 @@
 from pymongo.errors import ServerSelectionTimeoutError
+from pymongo.errors import PyMongoError
+
 
 from bot import asyncio, bot_id
 from bot.config import _bot, conf
@@ -58,3 +60,34 @@ async def save2db2(data: dict | str = False, db: str = None):
     if db == "rss":
         await sync_to_async(rssdb.update_one, _filter, {"$set": _update}, upsert=True)
         return
+
+
+async def set_watermark(user_id: int, url: str):
+    try:
+        await sync_to_async(
+            userdb.update_one,
+            {"_id": user_id},
+            {"$set": {"watermark": url}},
+            upsert=True
+        )
+    except PyMongoError as e:
+        print(f"[SET_WATERMARK_ERROR] {e}")
+        raise
+
+async def get_watermark(user_id: int) -> str | None:
+    try:
+        result = await sync_to_async(userdb.find_one, {"_id": user_id})
+        return result.get("watermark") if result else None
+    except PyMongoError as e:
+        print(f"[GET_WATERMARK_ERROR] {e}")
+        return None
+
+async def delete_watermark(user_id: int):
+    try:
+        await sync_to_async(
+            userdb.update_one,
+            {"_id": user_id},
+            {"$unset": {"watermark": ""}}
+        )
+    except PyMongoError as e:
+        print(f"[DELETE_WATERMARK_ERROR] {e}")
